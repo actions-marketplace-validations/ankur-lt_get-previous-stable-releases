@@ -1,15 +1,23 @@
-name: 'Send releases to slack'
+name: 'Get previous stable releases'
 description: 'A Github action for posting release notes to slack'
 inputs:
-  webhook_url:  # id of input
-    description: 'webhook url'
+  user:
+    description: 'user'
     required: true
-  repo_name: # repo name
-    description: 'repo_name'
-    required: false
+  repoName:
+    description: 'repoName'
+    required: true
+  accessToken:
+    description: 'accessToken'
+    required: true
   body:
     description: 'JSON changelog output supported by https://www.npmjs.com/package/auto-changelog'
     required: true
+outputs:
+  previousStableTag:
+    description: 'previousStableTag'
+  previousSecondStableTag:
+    description: 'previousSecondStableTag'
 runs:
   using: 'node12'
   main: 'dist/index.js'

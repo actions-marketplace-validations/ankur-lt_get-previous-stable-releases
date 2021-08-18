@@ -1,100 +1,53 @@
 const core = require('@actions/core');
-const SLACK_WEBHOOK_URL = core.getInput('webhook_url');
-const slack = require('slack-notify')(SLACK_WEBHOOK_URL);
 const _ = require('lodash');
+const axios = require('axios');
 
 try {
-  // `body` input defined in action metadata file
-  let body = core.getInput('body');
-  let repoName = core.getInput('repo_name');
+  let user = core.getInput('user');
+  let repoName = core.getInput('repoName');
+  let accessToken = core.getInput('accessToken')
+  let githubApi = 'https://api.github.com'
 
-  console.log('Changelog Body received::', body);
+  let firstSet = false
+  let secondSet = false
 
-  if (typeof body === 'string') {
-    console.log('Parsing the stringified body to JSON')
-    body = JSON.parse(body)
-  }
+  console.log('Received::', user, repoName, accessToken);
 
-  if (_.isEmpty(body) && !Array.isArray(body)) {
-    console.log('Changelog is empty or not in required format!');
-    core.setFailed('Changelog is empty or not in required format!');
-  }
+  axios.get(`${githubApi}/repos/${user}/${repoName}/releases`, {
+    headers: {
+      'Authorization': `token ${accessToken}`
+    }
+  })
+  .then(function (response) {
+    console.log(_.get(response, 'data'));
 
-  // Get first release of the body
-  body = body[0]
-  console.log('Current release changelog parsed as::', JSON.stringify(body))
+    _.isArray(_.get(response, 'data')) && _.forEach(_.get(response, 'data'), (release) => {
+      if (!release.prerelease) {
+        if (!firstSet) {
+          core.setOutput('previousStableTag', release.tag_name)
+          console.log("Set previousStableTag as::", release.tag_name)
+          firstSet = true
+        }
+        else if(!secondSet) {
+          core.setOutput('previousSecondStableTag', release.tag_name)
+          console.log("Set previousSecondStableTag as::", release.tag_name)
 
-  // initialise skeleton of slack message body
-  let slackMessageBody = {
-    'blocks': [
-      {
-        'type': 'header',
-        'text': {
-          'type': 'plain_text',
-          'text': '',
-        },
-      },
-      {
-        'type': 'section',
-        'text': {
-          'type': 'mrkdwn',
-          'text': '',
-        },
-      },
-      {
-        'type': 'section',
-        'text': {
-          'type': 'mrkdwn',
-          'text': '',
-        },
-      },
-    ],
-  };
+          secondSet = true
+        }
+      }
 
-  let slackChangelog = '```\n';
+      if (firstSet && secondSet) {
+        return
+      }
+    });
 
-  // Assign header for message
-  _.set(slackMessageBody, 'blocks[0].text.text', `${repoName} ${_.get(body, 'title')}`);
+  })
+  .catch(function (error) {
+    console.log(error);
+    core.setFailed(error);
+  })
 
-  // Assign changelog title
-  let changelogTitle = 'Changelog'
 
-  if (body.href) {
-    changelogTitle = `*<${body.href}|Changelog>*`
-  }
-
-  _.set(slackMessageBody, 'blocks[1].text.text', changelogTitle);
-
-  // Generate changelog from commits
-  _.isArray(body.commits) && _.forEach(body.commits, (log) => {
-    slackChangelog += `- <${log.href}|${_.get(log, 'subject')}>\n`;
-  });
-
-  // Generate changelog from merges
-  _.isArray(body.merges) && _.forEach(body.merges, (log) => {
-    slackChangelog += `- <${log.href}|${_.get(log, 'message')}>\n`;
-  });
-
-  // Generate changelog from fixes
-  _.isArray(body.fixes) && _.forEach(body.fixes, (log) => {
-    slackChangelog += `- <${log.href}|${_.get(log, 'subject') || _.get(log, 'message')}>\n`;
-  });
-
-  // Add closing code snippets to the body
-  slackChangelog += '```'
-
-  // Assign generated changelog to the body
-  _.set(slackMessageBody, 'blocks[2].text.text', slackChangelog);
-
-  // Send slack alert
-  // Channel has been configured in the respective slack app
-  console.log('Sending slack message as::', JSON.stringify(slackMessageBody))
-  slack.alert(slackMessageBody);
-
-  slack.onError = function(err) {
-    console.log('API error:', err);
-    core.setFailed(err);
-  };
 } catch (error) {
   core.setFailed(error.message);
 }
