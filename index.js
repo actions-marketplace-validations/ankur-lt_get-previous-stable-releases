@@ -10,6 +10,7 @@ try {
 
   let firstSet = false
   let secondSet = false
+  let thirdSet = false
 
   console.log('Received::', user, repoName, accessToken);
 
@@ -34,9 +35,15 @@ try {
 
           secondSet = true
         }
+        else if(!thirdSet) {
+          core.setOutput('previousThirdStableTag', release.tag_name)
+          console.log("Set previousThirdStableTag as::", release.tag_name)
+
+          thirdSet = true
+        }
       }
 
-      if (firstSet && secondSet) {
+      if (firstSet && secondSet && thirdSet) {
         return
       }
     });

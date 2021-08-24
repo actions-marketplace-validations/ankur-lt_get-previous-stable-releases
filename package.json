@@ -1,6 +1,6 @@
 {
   "name": "get-previous-stable-releases",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Github action for posting workflow notifications to Slack.",
   "main": "dist/index.js",
   "scripts": {

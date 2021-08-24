@@ -10,14 +10,13 @@ inputs:
   accessToken:
     description: 'accessToken'
     required: true
-  body:
-    description: 'JSON changelog output supported by https://www.npmjs.com/package/auto-changelog'
-    required: true
 outputs:
   previousStableTag:
     description: 'previousStableTag'
   previousSecondStableTag:
     description: 'previousSecondStableTag'
+  previousThirdStableTag:
+    description: 'previousThirdStableTag'
 runs:
   using: 'node12'
   main: 'dist/index.js'
