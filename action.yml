@@ -1,5 +1,5 @@
 name: 'Get previous stable releases'
-description: 'A Github action for posting release notes to slack'
+description: 'A Github action to get the previous stable releases'
 inputs:
   user:
     description: 'user'
