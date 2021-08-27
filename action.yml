@@ -1,5 +1,5 @@
-name: 'Get previous stable releases'
-description: 'A Github action to get the previous stable releases'
+name: 'Get previous releases'
+description: 'A Github action to get the previous releases'
 inputs:
   user:
     description: 'user'
@@ -10,13 +10,17 @@ inputs:
   accessToken:
     description: 'accessToken'
     required: true
+  stable:
+    description: 'Is stable release required? Boolean value'
+    required: false
+    default: 'true'
 outputs:
-  previousStableTag:
-    description: 'previousStableTag'
-  previousSecondStableTag:
-    description: 'previousSecondStableTag'
-  previousThirdStableTag:
-    description: 'previousThirdStableTag'
+  previousTag:
+    description: 'previousTag'
+  previousSecondTag:
+    description: 'previousSecondTag'
+  previousThirdTag:
+    description: 'previousThirdTag'
 runs:
   using: 'node12'
   main: 'dist/index.js'

@@ -530,14 +530,15 @@ const axios = __webpack_require__(53);
 try {
   let user = core.getInput('user');
   let repoName = core.getInput('repoName');
-  let accessToken = core.getInput('accessToken')
+  let accessToken = core.getInput('accessToken');
+  let stable = core.getBooleanInput('stable')
   let githubApi = 'https://api.github.com'
 
   let firstSet = false
   let secondSet = false
   let thirdSet = false
 
-  console.log('Received::', user, repoName, accessToken);
+  console.log('Received arguments::', user, repoName, accessToken, stable);
 
   axios.get(`${githubApi}/repos/${user}/${repoName}/releases`, {
     headers: {
@@ -545,10 +546,10 @@ try {
     }
   })
   .then(function (response) {
-    console.log(_.get(response, 'data'));
+    // console.log("Previous releases: ", _.get(response, 'data'));
 
     _.isArray(_.get(response, 'data')) && _.forEach(_.get(response, 'data'), (release) => {
-      if (!release.prerelease) {
+      if ((stable === true && !release.prerelease) || (stable === false)) {
         if (!firstSet) {
           core.setOutput('previousStableTag', release.tag_name)
           console.log("Set previousStableTag as::", release.tag_name)
