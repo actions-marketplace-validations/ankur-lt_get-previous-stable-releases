@@ -22,7 +22,7 @@ outputs:
   previousThirdTag:
     description: 'previousThirdTag'
 runs:
-  using: 'node12'
+  using: 'node16'
   main: 'dist/index.js'
 branding:
   icon: 'at-sign'
